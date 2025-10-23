@@ -1,0 +1,25 @@
+{
+  "name": "Check My Car",
+
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  // 8081 (Metro), 19000 (Expo), 19001, 19002
+  "forwardPorts": [8081, 19000, 19001, 19002],
+
+  // Extensões úteis
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "expo.vscode-expo-tools"
+      ]
+    }
+  },
+
+  // Comando pós-criação:
+  // Instala as dependências do seu package.json automaticamente
+  "postCreateCommand": "npm install"
+}

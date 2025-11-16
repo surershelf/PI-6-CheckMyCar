@@ -3,7 +3,7 @@ let vehicles = [];
 
 export async function listVehicles(userId) {
 
-  return vehicles;
+  return [...vehicles];
 }
 
 export async function createVehicle(userId, data) {
@@ -12,7 +12,7 @@ export async function createVehicle(userId, data) {
     userId,
     ...data,
   };
-  vehicles.push(newVehicle);
+  vehicles = [...vehicles, newVehicle];
   return newVehicle;
 }
 

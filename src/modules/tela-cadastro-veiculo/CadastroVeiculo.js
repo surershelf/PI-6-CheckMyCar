@@ -1,4 +1,3 @@
-// src/modules/tela-cadastro-veiculo/CadastroVeiculo.js
 
 import React, { useState } from "react";
 import { StyleSheet, ScrollView, Alert } from "react-native";
@@ -10,9 +9,7 @@ import { createVehicle } from "../../services/VehicleService";
 // ID temporário enquanto não tem autenticação
   const TEMP_USER_ID = "dev-user-1";
 
-  //quando criar o navigation, tem que passar ele de parametro para o CadastroVeiculo = ({navigation})
-
-const CadastroVeiculo = () => {
+const CadastroVeiculo = ({navigation}) => {
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
   const [marca, setMarca] = useState("");
@@ -28,7 +25,7 @@ const CadastroVeiculo = () => {
       return;
     } 
     try{
-      await createVehicle(TEMP_USER_ID,{
+      const novo = await createVehicle(TEMP_USER_ID,{
         modelo,
         ano,
         marca,
@@ -36,7 +33,7 @@ const CadastroVeiculo = () => {
         placa,
         renavam,
       });
-      console.log("CLICOU NO BOTÃO");
+      console.log("✅ Veículo criado:", novo);
       Alert.alert("Veículo cadastrado com sucesso!");
 
       setModelo("");
@@ -46,9 +43,9 @@ const CadastroVeiculo = () => {
       setPlaca("");
       setRenavam("");
 
-      //navigation.navigate("Home");
+      navigation.navigate("Home");
       }catch (error){
-        console.log(error);
+        console.log("💥 ERRO createVehicle:", error);
         Alert.alert("Erro", "Não foi possível cadastrar o veículo.");
       }
     };

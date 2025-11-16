@@ -27,7 +27,7 @@ const Input = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         secureTextEntry={secureTextEntry}
-        placeholderTextColor="#999" // Uma cor boa para o placeholder
+        placeholderTextColor="#999" 
       />
     </View>
   );

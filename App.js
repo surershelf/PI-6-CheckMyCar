@@ -1,17 +1,34 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
-import Button from "./src/components/Button";
-import Input from "./src/components/Input";
+import React from "react";
+import { StyleSheet } from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createDrawerNavigator } from "@react-navigation/drawer";
+
+import HomePage from "./src/modules/home-page/HomePage";
 import CadastroVeiculo from "./src/modules/tela-cadastro-veiculo/CadastroVeiculo";
+
+
+const Drawer = createDrawerNavigator();
 
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <CadastroVeiculo/>
-    </View>
+    <NavigationContainer>
+      <Drawer.Navigator initialRouteName="Home">
+        <Drawer.Screen
+          name="Home"
+          component={HomePage}
+          options={{ title: "Página inicial" }}
+        />
+        <Drawer.Screen
+          name="CadastroVeiculo"
+          component={CadastroVeiculo}
+          options={{ title: "Cadastro de veículo" }}
+        />
+      </Drawer.Navigator>
+    </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

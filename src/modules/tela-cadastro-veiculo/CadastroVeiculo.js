@@ -1,15 +1,15 @@
-
 import React, { useState } from "react";
 import { StyleSheet, ScrollView, Alert } from "react-native";
 import Button from "../../components/Button";
 import Input from "../../components/Input";
 import Header from "../../components/Header";
 import { createVehicle } from "../../services/VehicleService";
+import { theme } from "../../constants/theme";
 
 // ID temporário enquanto não tem autenticação
-  const TEMP_USER_ID = "dev-user-1";
+const TEMP_USER_ID = "dev-user-1";
 
-const CadastroVeiculo = ({navigation}) => {
+const CadastroVeiculo = ({ navigation }) => {
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
   const [marca, setMarca] = useState("");
@@ -17,15 +17,14 @@ const CadastroVeiculo = ({navigation}) => {
   const [placa, setPlaca] = useState("");
   const [renavam, setRenavam] = useState("");
 
-
   const handleAddCar = async () => {
     if (!modelo || !ano || !marca || !km || !placa || !renavam) {
-      Alert.alert("Atenção","Preencha todos os campos");
+      Alert.alert("Atenção", "Preencha todos os campos");
       console.log("CLICOU NO BOTÃO");
       return;
-    } 
-    try{
-      const novo = await createVehicle(TEMP_USER_ID,{
+    }
+    try {
+      const novo = await createVehicle(TEMP_USER_ID, {
         modelo,
         ano,
         marca,
@@ -33,7 +32,7 @@ const CadastroVeiculo = ({navigation}) => {
         placa,
         renavam,
       });
-      console.log("✅ Veículo criado:", novo);
+      console.log(" Veículo criado:", novo);
       Alert.alert("Veículo cadastrado com sucesso!");
 
       setModelo("");
@@ -44,22 +43,42 @@ const CadastroVeiculo = ({navigation}) => {
       setRenavam("");
 
       navigation.navigate("Home");
-      }catch (error){
-        console.log("💥 ERRO createVehicle:", error);
-        Alert.alert("Erro", "Não foi possível cadastrar o veículo.");
-      }
-    };
+    } catch (error) {
+      console.log(" ERRO createVehicle:", error);
+      Alert.alert("Erro", "Não foi possível cadastrar o veículo.");
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Header title="Cadastro de Veículo" /> 
+      <Header title="Cadastro de Veículo" />
 
-      <Input label="Modelo"  placeholder="Modelo"  value={modelo}  onChangeText={setModelo} />
-      <Input label="Ano"     placeholder="Ano"     value={ano}     onChangeText={setAno} />
-      <Input label="Marca"   placeholder="Marca"   value={marca}   onChangeText={setMarca} />
-      <Input label="KM"      placeholder="KM"      value={km}      onChangeText={setKM} />
-      <Input label="Placa"   placeholder="Placa"   value={placa}   onChangeText={setPlaca} />
-      <Input label="Renavam" placeholder="Renavam" value={renavam} onChangeText={setRenavam} />
+      <Input
+        label="Modelo"
+        placeholder="Modelo"
+        value={modelo}
+        onChangeText={setModelo}
+      />
+      <Input label="Ano" placeholder="Ano" value={ano} onChangeText={setAno} />
+      <Input
+        label="Marca"
+        placeholder="Marca"
+        value={marca}
+        onChangeText={setMarca}
+      />
+      <Input label="KM" placeholder="KM" value={km} onChangeText={setKM} />
+      <Input
+        label="Placa"
+        placeholder="Placa"
+        value={placa}
+        onChangeText={setPlaca}
+      />
+      <Input
+        label="Renavam"
+        placeholder="Renavam"
+        value={renavam}
+        onChangeText={setRenavam}
+      />
 
       <Button title="Cadastrar" onPress={handleAddCar} />
     </ScrollView>
@@ -69,10 +88,10 @@ const CadastroVeiculo = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#fff",
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
+    backgroundColor: theme.colors.cardBackground,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xxl,
+    borderRadius: theme.borderRadius.sm,
     alignItems: "center",
     justifyContent: "center",
   },

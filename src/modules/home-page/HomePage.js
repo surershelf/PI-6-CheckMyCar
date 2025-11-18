@@ -1,3 +1,4 @@
+// src/screens/HomePage.js
 import React, { useState, useCallback } from "react";
 import {
   ScrollView,
@@ -11,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 
 import Logo_Completa from "../../assets/Logo_Completa.png";
 import { listVehicles } from "../../services/VehicleService";
+import { theme } from "../../constants/theme";
 
 const TEMP_USER_ID = "dev-user-1";
 const mockUser = "João";
@@ -22,7 +24,7 @@ const HomePage = ({ navigation }) => {
     useCallback(() => {
       const loadVehicles = async () => {
         const data = await listVehicles(TEMP_USER_ID);
-        console.log("📥 listVehicles retornou:", data);
+        console.log("listVehicles retornou:", data);
         setVehicles(data);
       };
 
@@ -67,58 +69,60 @@ const HomePage = ({ navigation }) => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: theme.colors.background,
     alignItems: "center",
-    paddingVertical: 24,
+    paddingVertical: theme.spacing.xxl,
   },
   logoHomePage: {
-    width: 60,
-    height: 60,
-    marginBottom: 16,
+    width: 100,
+    height: 100,
+    marginBottom: theme.spacing.xl,
   },
   welcomeText: {
-    fontSize: 18,
-    marginBottom: 16,
+    fontSize: theme.fontSize.lg,
+    marginBottom: theme.spacing.xl,
+    color: theme.colors.textPrimary,
   },
   boxVeiculos: {
     width: "85%",
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
+    backgroundColor: theme.colors.cardBackground,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
-    borderColor: "#000000",
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    borderColor: theme.colors.border,
+    paddingVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
   },
   boxTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.weights.bold,
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: theme.spacing.lg,
+    color: theme.colors.textPrimary,
   },
   emptyText: {
     textAlign: "center",
-    fontSize: 14,
-    color: "#777",
-    marginBottom: 12,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.lg,
   },
   cardVeiculo: {
     borderWidth: 1,
-    borderColor: "#888",
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    marginBottom: 10,
-    backgroundColor: "#fff",
+    borderColor: theme.colors.borderSoft,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.cardBackground,
     alignItems: "center",
   },
   cardTitulo: {
-    fontSize: 18,
-    fontWeight: "500",
-    marginBottom: 4,
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.weights.medium,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.textPrimary,
   },
   cardInfoRow: {
     flexDirection: "row",
@@ -126,20 +130,22 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   cardInfoText: {
-    fontSize: 14,
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.textPrimary,
   },
   addButton: {
-    marginTop: 12,
+    marginTop: theme.spacing.lg,
     alignSelf: "center",
-    paddingVertical: 8,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
-    borderColor: "#7B61FF",
+    borderColor: theme.colors.primary, //Roxo
   },
   addButtonText: {
-    fontSize: 14,
-    color: "#7B61FF",
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary, // Roxo
+    fontWeight: theme.weights.medium,
   },
 });
 

@@ -1,4 +1,4 @@
-// src/screens/HomePage.js
+
 import React, { useState, useCallback } from "react";
 import {
   ScrollView,

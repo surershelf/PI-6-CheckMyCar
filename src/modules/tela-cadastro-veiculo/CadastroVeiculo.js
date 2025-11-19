@@ -5,11 +5,14 @@ import Input from "../../components/Input";
 import Header from "../../components/Header";
 import { createVehicle } from "../../services/VehicleService";
 import { theme } from "../../constants/theme";
+import Select from "../../components/Select";
 
 // ID temporário enquanto não tem autenticação
 const TEMP_USER_ID = "dev-user-1";
 
 const CadastroVeiculo = ({ navigation }) => {
+  const [tipVeiculo, setTipVeiculo] = useState("");
+  const [tipCombust, setTipCombust] = useState("");
   const [modelo, setModelo] = useState("");
   const [ano, setAno] = useState("");
   const [marca, setMarca] = useState("");
@@ -17,27 +20,41 @@ const CadastroVeiculo = ({ navigation }) => {
   const [placa, setPlaca] = useState("");
   const [renavam, setRenavam] = useState("");
 
+  const tipoVeiculos = ["Carro", "Moto", "Outros"];
+  const tipoCombustivel = ["Alcool", "Gasolina", "Flex", "Diesel"];
   const handleAddCar = async () => {
-    if (!modelo || !ano || !marca || !km || !placa || !renavam) {
+    if (
+      !tipVeiculo ||
+      !modelo ||
+      !ano ||
+      !marca ||
+      !km ||
+      !tipCombust ||
+      !placa ||
+      !renavam
+    ) {
       Alert.alert("Atenção", "Preencha todos os campos");
       console.log("CLICOU NO BOTÃO");
       return;
     }
     try {
       const novo = await createVehicle(TEMP_USER_ID, {
+        tipVeiculo,
         modelo,
         ano,
         marca,
         km,
+        tipCombust,
         placa,
         renavam,
       });
       console.log(" Veículo criado:", novo);
       Alert.alert("Veículo cadastrado com sucesso!");
-
+      setTipVeiculo("Carro");
       setModelo("");
       setAno("");
       setMarca("");
+      setTipCombust("Flex");
       setKM("");
       setPlaca("");
       setRenavam("");
@@ -53,6 +70,14 @@ const CadastroVeiculo = ({ navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       <Header title="Cadastro de Veículo" />
 
+      <Select
+        label="Tipo de Veículo"
+        value={tipVeiculo}
+        options={tipoVeiculos}
+        onSelect={setTipVeiculo}
+        placeholder="Selecione o veículo"
+      />
+
       <Input
         label="Modelo"
         placeholder="Modelo"
@@ -67,6 +92,14 @@ const CadastroVeiculo = ({ navigation }) => {
         onChangeText={setMarca}
       />
       <Input label="KM" placeholder="KM" value={km} onChangeText={setKM} />
+      <Select
+        label="Tipo Combustível"
+        value={tipCombust}
+        options={tipoCombustivel}
+        onSelect={setTipCombust}
+        placeholder="Selecione o combustível"
+      />
+
       <Input
         label="Placa"
         placeholder="Placa"

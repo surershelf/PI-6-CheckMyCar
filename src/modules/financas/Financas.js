@@ -1,21 +1,12 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
+import Select from "../../components/Select";
 
-export default function FinancasScreen() {
+const FinancasScreen = ({ navigation }) => {
   const [periodo, setPeriodo] = useState("Últimos 3 meses");
   const [filtro, setFiltro] = useState("Consumo");
-
-  const [openPeriodo, setOpenPeriodo] = useState(false);
-  const [openFiltro, setOpenFiltro] = useState(false);
 
   const periodOptions = [
     "Última semana",
@@ -58,132 +49,70 @@ export default function FinancasScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Header title="Finanças" />
+    // 1. O container da ScrollView agora centraliza o wrapper de conteúdo
+    <ScrollView contentContainerStyle={styles.container}>
+      {/* 2. ContentWrapper define a largura útil da tela e centraliza o conteúdo */}
+      <View style={styles.contentWrapper}>
+        <Header title="Finanças" />
 
-      {/* ----------- PERÍODO -------------- */}
-      <Text style={styles.label}>Período</Text>
+        {/* ----------- PERÍODO -------------- */}
+        <Select
+          label="Período"
+          value={periodo}
+          options={periodOptions}
+          onSelect={setPeriodo}
+          placeholder="Selecione o Período"
+          style={styles.selectCentered}
+        />
 
-      <TouchableOpacity
-        style={styles.select}
-        onPress={() => setOpenPeriodo(!openPeriodo)}
-      >
-        <Text style={styles.selectText}>{periodo}</Text>
-      </TouchableOpacity>
+        {/* ----------- FILTRO -------------- */}
+        <Select
+          label="Filtro"
+          value={filtro}
+          options={filterOptions}
+          onSelect={setFiltro}
+          placeholder="Selecione o Filtro"
+          style={styles.selectCentered}
+        />
 
-      {openPeriodo && (
-        <View style={styles.dropdown}>
-          {periodOptions.map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setPeriodo(item);
-                setOpenPeriodo(false);
-              }}
-            >
-              <Text style={styles.dropdownItemText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
+        {/* ----------- CARDS -------------- */}
+        {vehicles.map((vehicle) => (
+          // Adicione um estilo de largura total ao Card para usar 100% do contentWrapper
+          <View key={vehicle.id} style={[styles.card, styles.fullWidth]}>
+            <View style={styles.cardLeft}>
+              <Text style={styles.cardTitle}>{vehicle.nome}</Text>
+              <Text style={styles.cardSub}>{vehicle.tipo}</Text>
+              <Text style={styles.cardSub}>KM</Text>
+            </View>
 
-      {/* ----------- FILTRO -------------- */}
-      <Text style={styles.label}>Filtro</Text>
-
-      <TouchableOpacity
-        style={styles.select}
-        onPress={() => setOpenFiltro(!openFiltro)}
-      >
-        <Text style={styles.selectText}>{filtro}</Text>
-      </TouchableOpacity>
-
-      {openFiltro && (
-        <View style={styles.dropdown}>
-          {filterOptions.map((item) => (
-            <TouchableOpacity
-              key={item}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setFiltro(item);
-                setOpenFiltro(false);
-              }}
-            >
-              <Text style={styles.dropdownItemText}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      {/* ----------- CARDS -------------- */}
-      {vehicles.map((vehicle) => (
-        <View key={vehicle.id} style={styles.card}>
-          <View style={styles.cardLeft}>
-            <Text style={styles.cardTitle}>{vehicle.nome}</Text>
-            <Text style={styles.cardSub}>{vehicle.tipo}</Text>
-            <Text style={styles.cardSub}>KM</Text>
+            <View style={styles.cardRight}>
+              <Text style={styles.cardValue}>{renderValue(vehicle)}</Text>
+              <Text style={styles.cardKm}>{vehicle.km} Km</Text>
+            </View>
           </View>
-
-          <View style={styles.cardRight}>
-            <Text style={styles.cardValue}>{renderValue(vehicle)}</Text>
-            <Text style={styles.cardKm}>{vehicle.km} Km</Text>
-          </View>
-        </View>
-      ))}
+        ))}
+      </View>
     </ScrollView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: theme.colors.background,
-    padding: theme.spacing.xl,
+    paddingVertical: theme.spacing.lg,
+    alignItems: "center",
   },
 
-  label: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.weights.medium,
-    color: theme.colors.textPrimary,
-    marginTop: theme.spacing.lg,
+  contentWrapper: {
+    width: "90%",
   },
 
-  /* Select (campo do dropdown fechado) */
-  select: {
-    backgroundColor: theme.colors.cardBackground,
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSoft,
-    marginTop: theme.spacing.sm,
+  fullWidth: {
+    width: "100%",
   },
-
-  selectText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textPrimary,
-  },
-
-  /* Dropdown aberto */
-  dropdown: {
-    backgroundColor: theme.colors.cardBackground,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSoft,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.xs,
-    overflow: "hidden",
-  },
-
-  dropdownItem: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.xl,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.borderSoft,
-  },
-
-  dropdownItemText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.textPrimary,
+  selectCentered: {
+    alignSelf: "center",
   },
 
   /* Cards */
@@ -230,3 +159,5 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
 });
+
+export default FinancasScreen;

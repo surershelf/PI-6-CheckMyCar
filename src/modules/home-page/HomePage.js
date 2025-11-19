@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from "react";
 import {
   ScrollView,
@@ -13,6 +12,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import Logo_Completa from "../../assets/Logo_Completa.png";
 import { listVehicles } from "../../services/VehicleService";
 import { theme } from "../../constants/theme";
+import NavigationButton from "../../components/NavigationButton";
 
 const TEMP_USER_ID = "dev-user-1";
 const mockUser = "João";
@@ -48,22 +48,40 @@ const HomePage = ({ navigation }) => {
           vehicles.map((v) => (
             <View key={v.id} style={styles.cardVeiculo}>
               <Text style={styles.cardTitulo}>{v.modelo}</Text>
+              <View style={styles.cardLeftContent}>
+                {v.tipVeiculo === "Carro" && (
+                  <Text style={styles.vehicleIcon}>🚗</Text>
+                )}
+                {v.tipVeiculo === "Moto" && (
+                  <Text style={styles.vehicleIcon}>🏍️</Text>
+                )}
+                {v.tipVeiculo === "Outros" && (
+                  <Text style={styles.vehicleIcon}>🚌</Text>
+                )}
+
+                <TouchableOpacity
+                  key={v.id}
+                  style={styles.editButton}
+                  onPress={() =>
+                    console.log("Ação: Navegar para Detalhes do Veículo")
+                  }
+                >
+                  ▶
+                </TouchableOpacity>
+              </View>
               <View style={styles.cardInfoRow}>
-                <Text style={styles.cardInfoText}>
-                  {v.combustivel || "Gasolina"}
-                </Text>
+                <Text style={styles.cardInfoText}>{v.tipCombust}</Text>
                 <Text style={styles.cardInfoText}>{v.ano}</Text>
               </View>
             </View>
           ))
         )}
 
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={() => navigation.navigate("CadastroVeiculo")}
-        >
-          <Text style={styles.addButtonText}>Adicionar Veículo</Text>
-        </TouchableOpacity>
+        <NavigationButton
+          placeholder={"Adicionar Veículos"}
+          screenName={"CadastroVeiculo"}
+          navigation={navigation}
+        />
       </View>
     </ScrollView>
   );
@@ -118,7 +136,28 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.cardBackground,
     alignItems: "center",
   },
+  cardLeftContent: {
+    flexDirection: "row",
+    flexShrink: 1,
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  vehicleIcon: {
+    fontSize: 24,
+    marginRight: 0,
+  },
+  editButton: {
+    borderWidth: 1,
+    borderColor: theme.colors.borderSoft,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    alignItems: "center",
+    backgroundColor: "black",
+    color: "white",
+  },
   cardTitulo: {
+    flexDirection: "row",
     fontSize: theme.fontSize.lg,
     fontWeight: theme.weights.medium,
     marginBottom: theme.spacing.xs,
@@ -132,20 +171,6 @@ const styles = StyleSheet.create({
   cardInfoText: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.textPrimary,
-  },
-  addButton: {
-    marginTop: theme.spacing.lg,
-    alignSelf: "center",
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.primary, //Roxo
-  },
-  addButtonText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary, // Roxo
-    fontWeight: theme.weights.medium,
   },
 });
 

@@ -6,10 +6,9 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import HomePage from "./src/modules/home-page/HomePage";
 import CadastroVeiculo from "./src/modules/tela-cadastro-veiculo/CadastroVeiculo";
 import Financas from "./src/modules/financas/Financas";
-
+import LoginPage from "./src/modules/login/LoginPage";
 
 const Drawer = createDrawerNavigator();
-
 
 export default function App() {
   return (
@@ -29,12 +28,16 @@ export default function App() {
           name="Financas"
           component={Financas}
           options={{ title: "Finanças" }}
-        />       
+        />
+        <Drawer.Screen
+          name="Login"
+          component={LoginPage}
+          options={{ title: "Login" }}
+        />
       </Drawer.Navigator>
     </NavigationContainer>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {

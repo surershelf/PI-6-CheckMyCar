@@ -5,6 +5,7 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 
 import HomePage from "./src/modules/home-page/HomePage";
 import CadastroVeiculo from "./src/modules/tela-cadastro-veiculo/CadastroVeiculo";
+import Financas from "./src/modules/financas/Financas";
 
 
 const Drawer = createDrawerNavigator();
@@ -24,6 +25,11 @@ export default function App() {
           component={CadastroVeiculo}
           options={{ title: "Cadastro de veículo" }}
         />
+        <Drawer.Screen
+          name="Financas"
+          component={Financas}
+          options={{ title: "Finanças" }}
+        />       
       </Drawer.Navigator>
     </NavigationContainer>
   );

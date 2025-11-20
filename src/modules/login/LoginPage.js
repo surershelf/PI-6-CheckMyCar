@@ -1,23 +1,14 @@
 import React, { useState } from "react";
-import { Text, ScrollView, StyleSheet, View, CheckBox } from "react-native-web";
+import { Text, ScrollView, StyleSheet, View, CheckBox, TouchableOpacity } from "react-native";
 import Header from "../../components/Header";
 import Input from "../../components/Input";
-import Button from "../../components/Button"; // Seu componente Button
-import { Link } from "@react-navigation/native";
+import Button from "../../components/Button"; 
 import { theme } from "../../constants/theme";
-
-const CustomCheckBox = ({ children }) => (
-  <View style={styles.checkboxContainer}>
-    <CheckBox>
-      <Text style={styles.checkboxMark}>☐</Text>
-      <Text>{children}</Text>
-    </CheckBox>
-  </View>
-);
 
 const LoginPage = ({ navigation }) => {
   const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
+  const [keepConnected, setKeepConnected] = useState(false);
   // tem que criar um handle pro login, onde vai validar o login, por enquanto é algo bem estatico
 
   return (
@@ -36,12 +27,18 @@ const LoginPage = ({ navigation }) => {
         onChangeText={setSenha}
         secureTextEntry
       />
-      <CustomCheckBox>Mantenha-me conectado</CustomCheckBox>
-      <Link to={{ screen: "RegisterPage" }}>
+      <View style={styles.checkboxContainer}>
+        <CheckBox
+          value={keepConnected}
+          onValueChange={setKeepConnected}
+        />
+        <Text style = {styles.checkboxMark}>Mantenha-me conectado</Text>
+      </View>
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.linkText}>
           Não tem cadastro? Faça seu cadastro aqui!
         </Text>
-      </Link>
+      </TouchableOpacity>
       <Button title="Login" onPress={() => navigation.navigate("Home")} />
     </ScrollView>
   );
@@ -73,8 +70,9 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
   },
   checkboxMark: {
-    marginRight: 8,
+    marginRight: 5,
     fontSize: 16,
+    paddingHorizontal: theme.spacing.md
   },
 });
 

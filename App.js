@@ -7,6 +7,10 @@ import HomePage from "./src/modules/home-page/HomePage";
 import CadastroVeiculo from "./src/modules/tela-cadastro-veiculo/CadastroVeiculo";
 import Financas from "./src/modules/financas/Financas";
 import LoginPage from "./src/modules/login/LoginPage";
+import RegisterPage from "./src/modules/register/RegisterPage";
+import Abastecimento from "./src/modules/despesas/Abastecimento";
+import DespesasGerais from "./src/modules/despesas/DespesasGerais";
+import Manutencao from "./src/modules/despesas/Manutencao";
 
 const Drawer = createDrawerNavigator();
 
@@ -33,6 +37,26 @@ export default function App() {
           name="Login"
           component={LoginPage}
           options={{ title: "Login" }}
+        />
+        <Drawer.Screen
+          name="Register"
+          component={RegisterPage}
+          options={{ title: "Register" }}
+        />
+        <Drawer.Screen 
+          name="Abastecimento" 
+          component={Abastecimento} 
+          options={{title: "Abastecimento"}}
+        />
+        <Drawer.Screen
+          name="Despesa Diversa"
+          component={DespesasGerais}
+          options={{title: "Despesa Diversa"}}
+        />
+        <Drawer.Screen
+          name="Manutenção"
+          component={Manutencao}
+          options={{title: "Manutenção"}}
         />
       </Drawer.Navigator>
     </NavigationContainer>

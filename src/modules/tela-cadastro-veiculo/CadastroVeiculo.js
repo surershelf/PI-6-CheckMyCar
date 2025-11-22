@@ -6,6 +6,7 @@ import Header from "../../components/Header";
 import { createVehicle } from "../../services/VehicleService";
 import { theme } from "../../constants/theme";
 import Select from "../../components/Select";
+import { auth } from "../../../firebaseConfig";
 
 // ID temporário enquanto não tem autenticação
 const TEMP_USER_ID = "dev-user-1";
@@ -23,6 +24,18 @@ const CadastroVeiculo = ({ navigation }) => {
   const tipoVeiculos = ["Carro", "Moto", "Outros"];
   const tipoCombustivel = ["Alcool", "Gasolina", "Flex", "Diesel"];
   const handleAddCar = async () => {
+    // 1. OBTÉM O ID DO MOTORISTA LOGADO
+    const motoristaId = auth.currentUser?.uid;
+
+    if (!motoristaId) {
+      Alert.alert(
+        "Erro",
+        "Você precisa estar logado para cadastrar um veículo."
+      );
+      // Opcional: navigation.navigate("Login")
+      return;
+    }
+
     if (
       !tipVeiculo ||
       !modelo ||
@@ -34,11 +47,12 @@ const CadastroVeiculo = ({ navigation }) => {
       !renavam
     ) {
       Alert.alert("Atenção", "Preencha todos os campos");
-      console.log("CLICOU NO BOTÃO");
       return;
     }
+
     try {
-      const novo = await createVehicle(TEMP_USER_ID, {
+      // 2. PASSA O ID REAL DO MOTORISTA
+      const novo = await createVehicle(motoristaId, {
         tipVeiculo,
         modelo,
         ano,
@@ -47,14 +61,18 @@ const CadastroVeiculo = ({ navigation }) => {
         tipCombust,
         placa,
         renavam,
+        motoristaId: motoristaId, // Boa prática para garantir que o ID está no documento
       });
+
       console.log(" Veículo criado:", novo);
-      Alert.alert("Veículo cadastrado com sucesso!");
-      setTipVeiculo("Carro");
+      Alert.alert("Sucesso", "Veículo cadastrado com sucesso!");
+
+      // 3. LIMPA OS CAMPOS E NAVEGA
+      setTipVeiculo(""); // Alterado para string vazia para melhor UX
       setModelo("");
       setAno("");
       setMarca("");
-      setTipCombust("Flex");
+      setTipCombust(""); // Alterado para string vazia
       setKM("");
       setPlaca("");
       setRenavam("");
@@ -62,10 +80,12 @@ const CadastroVeiculo = ({ navigation }) => {
       navigation.navigate("Home");
     } catch (error) {
       console.log(" ERRO createVehicle:", error);
-      Alert.alert("Erro", "Não foi possível cadastrar o veículo.");
+      Alert.alert(
+        "Erro",
+        "Não foi possível cadastrar o veículo. Verifique a conexão."
+      );
     }
   };
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header title="Cadastro de Veículo" />

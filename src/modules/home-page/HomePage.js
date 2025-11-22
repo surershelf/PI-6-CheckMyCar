@@ -10,32 +10,97 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 
 import Logo_Completa from "../../assets/Logo_Completa.png";
-import { listVehicles } from "../../services/VehicleService";
 import { theme } from "../../constants/theme";
 import NavigationButton from "../../components/NavigationButton";
 
-const TEMP_USER_ID = "dev-user-1";
-const mockUser = "João";
+import { auth, db } from "../../../firebaseConfig";
+import {
+  collection,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
 const HomePage = ({ navigation }) => {
   const [vehicles, setVehicles] = useState([]);
+  const [userName, setUserName] = useState("Carregando..."); // Para o nome do motorista
+  // Você pode adicionar um estado de loading aqui se desejar
 
   useFocusEffect(
     useCallback(() => {
-      const loadVehicles = async () => {
-        const data = await listVehicles(TEMP_USER_ID);
-        console.log("listVehicles retornou:", data);
-        setVehicles(data);
+      const motoristaId = auth.currentUser?.uid;
+
+      // Sai se não houver usuário logado (Embora o roteador já deva impedir isso)
+      if (!motoristaId) {
+        setVehicles([]);
+        return;
+      }
+      const loadUserName = async () => {
+        try {
+          const userDocRef = doc(db, "motoristas", motoristaId);
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            // Se o documento existir, pega o nome
+            const userData = userDocSnap.data();
+            setUserName(userData.nome || "Motorista"); // Usa "Motorista" como fallback
+          } else {
+            setUserName("Novo Usuário"); // Documento não encontrado no Firestore
+          }
+        } catch (error) {
+          console.error("Erro ao buscar o nome do usuário:", error);
+          setUserName("Erro ao Carregar");
+        }
       };
 
-      loadVehicles();
+      loadUserName();
+
+      // 1. Cria a Query: Filtra a coleção 'veiculos' pelo motoristaId
+      const q = query(
+        collection(db, "veiculos"),
+        where("motoristaId", "==", motoristaId)
+        // Opcional: Adicione orderBy se quiser uma ordem específica
+      );
+
+      // 2. Cria o Listener em Tempo Real (onSnapshot)
+      // O onSnapshot retorna uma função de 'unsubscribe'
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          const vehiclesData = [];
+          querySnapshot.forEach((doc) => {
+            vehiclesData.push({
+              id: doc.id,
+              ...doc.data(),
+            });
+          });
+
+          // Atualiza o estado com os novos dados
+          setVehicles(vehiclesData);
+          console.log("Veículos atualizados em tempo real.");
+        },
+        (error) => {
+          console.error("Erro ao carregar veículos em tempo real:", error);
+          // O erro mais comum aqui são as Regras de Segurança
+          Alert.alert(
+            "Erro",
+            "Não foi possível carregar os veículos. Verifique as permissões."
+          );
+        }
+      );
+
+      // 3. O 'return' do useCallback garante que o listener seja cancelado
+      // quando a tela perder o foco ou for desmontada.
+      return unsubscribe;
     }, [])
   );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Image source={Logo_Completa} style={styles.logoHomePage} />
-      <Text style={styles.welcomeText}>Bem vindo, {mockUser}</Text>
+      <Text style={styles.welcomeText}>Bem vindo, {userName}</Text>
 
       <View style={styles.boxVeiculos}>
         <Text style={styles.boxTitle}>Confira seus veículos</Text>
@@ -63,7 +128,9 @@ const HomePage = ({ navigation }) => {
                   key={v.id}
                   style={styles.editButton}
                   onPress={() =>
-                    console.log("Ação: Navegar para Detalhes do Veículo")
+                    navigation.navigate("DetalhesVeiculo", {
+                      vehicleId: v.id,
+                    })
                   }
                 >
                   ▶

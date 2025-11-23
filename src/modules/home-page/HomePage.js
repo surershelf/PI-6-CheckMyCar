@@ -128,12 +128,12 @@ const HomePage = ({ navigation }) => {
                   key={v.id}
                   style={styles.editButton}
                   onPress={() =>
-                    navigation.navigate("DetalhesVeiculo", {
+                    navigation.navigate("verVeiculo", {
                       vehicleId: v.id,
                     })
                   }
                 >
-                  ▶
+                  <Text style={styles.editIcon}>▶</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.cardInfoRow}>
@@ -221,8 +221,11 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
     alignItems: "center",
     backgroundColor: "black",
+  },
+  editIcon: {
     color: "white",
   },
+
   cardTitulo: {
     flexDirection: "row",
     fontSize: theme.fontSize.lg,

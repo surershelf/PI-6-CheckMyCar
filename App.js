@@ -11,6 +11,8 @@ import RegisterPage from "./src/modules/register/RegisterPage";
 import Abastecimento from "./src/modules/despesas/Abastecimento";
 import DespesasGerais from "./src/modules/despesas/DespesasGerais";
 import Manutencao from "./src/modules/despesas/Manutencao";
+import EditarVeiculo from "./src/modules/editarVeiculo/EditarVeiculo";
+import VerVeiculo from "./src/modules/verVeiculo/verVeiculo";
 
 const Drawer = createDrawerNavigator();
 
@@ -43,20 +45,30 @@ export default function App() {
           component={RegisterPage}
           options={{ title: "Register" }}
         />
-        <Drawer.Screen 
-          name="Abastecimento" 
-          component={Abastecimento} 
-          options={{title: "Abastecimento"}}
+        <Drawer.Screen
+          name="Abastecimento"
+          component={Abastecimento}
+          options={{ title: "Abastecimento" }}
         />
         <Drawer.Screen
           name="Despesa Diversa"
           component={DespesasGerais}
-          options={{title: "Despesa Diversa"}}
+          options={{ title: "Despesa Diversa" }}
         />
         <Drawer.Screen
           name="Manutenção"
           component={Manutencao}
-          options={{title: "Manutenção"}}
+          options={{ title: "Manutenção" }}
+        />
+        <Drawer.Screen
+          name="EditarVeiculo"
+          component={EditarVeiculo}
+          options={{ title: "Editar Veiculo" }}
+        />
+        <Drawer.Screen
+          name="verVeiculo"
+          component={VerVeiculo}
+          options={{ title: "verVeiculo" }}
         />
       </Drawer.Navigator>
     </NavigationContainer>

@@ -7,6 +7,7 @@ import { createVehicle } from "../../services/VehicleService";
 import { theme } from "../../constants/theme";
 import Select from "../../components/Select";
 import { auth } from "../../../firebaseConfig";
+import BackButton from "../../components/BackButton";
 
 // ID temporário enquanto não tem autenticação
 const TEMP_USER_ID = "dev-user-1";
@@ -88,6 +89,8 @@ const CadastroVeiculo = ({ navigation }) => {
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <BackButton />
+
       <Header title="Cadastro de Veículo" />
 
       <Select

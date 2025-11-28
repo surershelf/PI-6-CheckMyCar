@@ -5,30 +5,27 @@ import Header from "../../components/Header";
 import Button from "../../components/Button";
 import BackButton from "../../components/BackButton";
 
-// Importações do Firebase
-import { db } from "../../../firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { getVehicleById } from "../../services/VehicleService";
 import NavigationButton from "../../components/NavigationButton";
 
-// Renomeamos a tela de edição para 'EditarExcluirVeiculo'
 const VerVeiculo = ({ route, navigation }) => {
-  const { vehicleId } = route.params;
+  const { vehicleId } = route.params; // Estado para armazenar os dados do veículo
 
-  // Estado para armazenar os dados do veículo
   const [vehicleData, setVehicleData] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // 1. Carrega os dados do veículo (Refatorado para usar Service e Recarregar no Foco)
 
-  // 1. Carrega os dados do veículo
   useEffect(() => {
     const loadVehicleData = async () => {
       if (!vehicleId) return;
 
-      try {
-        const docRef = doc(db, "veiculos", vehicleId);
-        const docSnap = await getDoc(docRef);
+      setIsLoading(true); // Inicia o loading
 
-        if (docSnap.exists()) {
-          setVehicleData(docSnap.data());
+      try {
+        // --- USANDO getVehicleById do Service ---
+        const data = await getVehicleById(vehicleId);
+
+        if (data) {
+          setVehicleData(data);
         } else {
           Alert.alert("Erro", "Veículo não encontrado.");
           navigation.goBack();
@@ -40,10 +37,14 @@ const VerVeiculo = ({ route, navigation }) => {
       } finally {
         setIsLoading(false);
       }
-    };
+    }; // Adiciona um listener para recarregar os dados sempre que a tela for focada (garante a atualização após a edição)
 
-    loadVehicleData();
-  }, [vehicleId, navigation]);
+    const unsubscribe = navigation.addListener("focus", loadVehicleData); // Chamada inicial para carregar os dados na montagem
+
+    loadVehicleData(); // Limpa o listener quando o componente for desmontado
+
+    return unsubscribe;
+  }, [vehicleId, navigation]); // Dependências garantem que o listener seja recriado se a navegação ou ID mudar
 
   if (isLoading) {
     return (
@@ -51,9 +52,8 @@ const VerVeiculo = ({ route, navigation }) => {
         <Header title="Carregando..." />
       </View>
     );
-  }
+  } // Função de navegação para a tela de edição
 
-  // Função de navegação para a tela de edição
   const goToEdit = () => {
     navigation.navigate("EditarVeiculo", { vehicleId });
   };
@@ -64,9 +64,7 @@ const VerVeiculo = ({ route, navigation }) => {
         <View style={styles.backButtonWrapper}>
           <BackButton />
         </View>
-
         <Header title={vehicleData.modelo || "Veículo"} />
-
         <View style={styles.card}>
           <Text style={styles.label}>Modelo:</Text>
           <Text style={styles.value}>{vehicleData.modelo}</Text>
@@ -85,22 +83,26 @@ const VerVeiculo = ({ route, navigation }) => {
           <Text style={styles.label}>Renavam:</Text>
           <Text style={styles.value}>{vehicleData.renavam}</Text>
         </View>
+
         <NavigationButton
           placeholder={"Adicionar Manutenção"}
           screenName={"Manutenção"}
           navigation={navigation}
         />
+
         <NavigationButton
           placeholder={"Adicionar Abastecimento"}
           screenName={"Abastecimento"}
           navigation={navigation}
         />
+
         <NavigationButton
           placeholder={"Adicionar Despesa Diversa"}
           screenName={"Despesa Diversa"}
           navigation={navigation}
         />
       </ScrollView>
+
       <Button
         title="Editar ou Excluir"
         onPress={goToEdit}

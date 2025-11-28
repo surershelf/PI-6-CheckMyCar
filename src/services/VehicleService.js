@@ -1,8 +1,10 @@
 // services/VehicleService.js
 
 // Importe as funcionalidades necessárias do Firestore
-import { db } from "../../firebaseConfig";
+import "../../firebaseConfig";
+import { getAuth } from "firebase/auth";
 import {
+  getFirestore, // ADICIONADO: Faltava importar
   collection,
   doc,
   getDoc,
@@ -12,20 +14,24 @@ import {
   deleteDoc,
   query,
   where,
+  onSnapshot, // ADICIONADO: Faltava importar
 } from "firebase/firestore";
 
-const VEHICLES_COLLECTION = "veiculos"; // Nome da coleção no Firestore
+const VEHICLES_COLLECTION = "veiculos";
+
+// Funções auxiliares movidas para o topo para evitar erros de referência
+const getDb = () => getFirestore();
+const getAuthInstance = () => getAuth();
 
 // --- 1. CREATE (Adicionar Veículo) ---
-// Substitui a função createVehicle local
 export async function createVehicle(userId, data) {
+  const db = getDb(); // ADICIONADO: Obtém a instância do db
   try {
     const docRef = await addDoc(collection(db, VEHICLES_COLLECTION), {
       ...data,
-      motoristaId: userId, // ESSENCIAL para segurança e filtragem!
+      motoristaId: userId,
       createdAt: new Date(),
     });
-    // Retorna o novo veículo com o ID gerado pelo Firestore
     return { id: docRef.id, ...data };
   } catch (error) {
     console.error("Erro ao criar veículo:", error);
@@ -33,21 +39,17 @@ export async function createVehicle(userId, data) {
   }
 }
 
-// --- 2. READ (Listar Veículos do Usuário) ---
-// Substitui a função listVehicles local, adicionando o filtro por userId
+// --- 2. READ (Listar Veículos do Usuário - Estático) ---
 export async function listVehicles(userId) {
+  const db = getDb(); // ADICIONADO
   try {
-    // 1. Cria uma consulta que filtra os veículos pelo ID do motorista
     const q = query(
       collection(db, VEHICLES_COLLECTION),
       where("motoristaId", "==", userId)
-      // Opcional: Adicionar orderBy('createdAt', 'desc') para ordenação
     );
 
-    // 2. Executa a consulta
     const vehiclesSnapshot = await getDocs(q);
 
-    // 3. Mapeia os documentos para um array de objetos, incluindo o ID do documento
     const vehiclesList = vehiclesSnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
@@ -60,36 +62,11 @@ export async function listVehicles(userId) {
   }
 }
 
-// --- 3. READ (Buscar por ID - NOVA FUNÇÃO) ---
-export async function getVehicleById(id) {
-  try {
-    // 1. Cria a referência ao documento específico usando o ID
-    const vehicleRef = doc(db, VEHICLES_COLLECTION, id);
-
-    // 2. Busca o documento
-    const vehicleSnap = await getDoc(vehicleRef);
-
-    if (vehicleSnap.exists()) {
-      // 3. Se o documento existe, retorna os dados junto com o ID
-      return { id: vehicleSnap.id, ...vehicleSnap.data() };
-    } else {
-      console.log("Documento de veículo não encontrado!");
-      return null;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar veículo por ID:", error);
-    throw error;
-  }
-}
-
 // --- 4. UPDATE (Atualizar Veículo) ---
-// Substitui a função updateVehicle local
 export async function updateVehicle(id, data) {
+  const db = getDb(); // ADICIONADO
   try {
-    // 1. Cria a referência ao documento
     const vehicleRef = doc(db, VEHICLES_COLLECTION, id);
-
-    // 2. Atualiza o documento com os novos dados
     await updateDoc(vehicleRef, data);
     console.log(`Veículo ${id} atualizado com sucesso.`);
   } catch (error) {
@@ -99,13 +76,10 @@ export async function updateVehicle(id, data) {
 }
 
 // --- 5. DELETE (Excluir Veículo) ---
-// Substitui a função deleteVehicle local
 export async function deleteVehicle(id) {
+  const db = getDb(); // ADICIONADO
   try {
-    // 1. Cria a referência ao documento
     const vehicleRef = doc(db, VEHICLES_COLLECTION, id);
-
-    // 2. Exclui o documento
     await deleteDoc(vehicleRef);
     console.log(`Veículo ${id} excluído com sucesso.`);
   } catch (error) {
@@ -113,3 +87,67 @@ export async function deleteVehicle(id) {
     throw error;
   }
 }
+
+// --- 3. READ (Buscar por ID) ---
+export const getVehicleById = async (vehicleId) => {
+  if (!vehicleId) return null;
+  const db = getDb(); // ADICIONADO
+
+  try {
+    const vehicleDocRef = doc(db, "veiculos", vehicleId);
+    const docSnap = await getDoc(vehicleDocRef);
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() };
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("Erro ao buscar veículo:", error);
+    throw new Error("Falha ao carregar dados do veículo.");
+  }
+};
+
+// --- READ (Lista em Tempo Real) ---
+export const subscribeToDriverVehicles = (callback, onError) => {
+  const auth = getAuthInstance();
+  const db = getDb(); // ADICIONADO
+
+  // --- VERIFICAÇÃO DE SEGURANÇA ---
+  if (!auth) {
+    console.error("ERRO CRÍTICO: Não foi possível obter a instância de Auth.");
+    onError(new Error("Erro de configuração do Firebase (Auth undefined)"));
+    return () => {};
+  }
+
+  const motoristaId = auth.currentUser?.uid;
+
+  if (!motoristaId) {
+    callback([]);
+    return () => {};
+  }
+
+  const q = query(
+    collection(db, "veiculos"),
+    where("motoristaId", "==", motoristaId)
+  );
+
+  const unsubscribe = onSnapshot(
+    q,
+    (querySnapshot) => {
+      const vehiclesData = [];
+      querySnapshot.forEach((doc) => {
+        vehiclesData.push({
+          id: doc.id,
+          ...doc.data(),
+        });
+      });
+      callback(vehiclesData);
+    },
+    (error) => {
+      console.error("Erro ao carregar veículos:", error);
+      onError(error);
+    }
+  );
+
+  return unsubscribe;
+};

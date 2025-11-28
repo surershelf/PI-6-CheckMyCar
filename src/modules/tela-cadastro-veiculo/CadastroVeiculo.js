@@ -8,9 +8,7 @@ import { theme } from "../../constants/theme";
 import Select from "../../components/Select";
 import { auth } from "../../../firebaseConfig";
 import BackButton from "../../components/BackButton";
-
-// ID temporário enquanto não tem autenticação
-const TEMP_USER_ID = "dev-user-1";
+import { View } from "react-native-web";
 
 const CadastroVeiculo = ({ navigation }) => {
   const [tipVeiculo, setTipVeiculo] = useState("");
@@ -89,8 +87,9 @@ const CadastroVeiculo = ({ navigation }) => {
   };
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <BackButton />
-
+      <View style={styles.backButtonWrapper}>
+        <BackButton />
+      </View>
       <Header title="Cadastro de Veículo" />
 
       <Select
@@ -150,6 +149,11 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.sm,
     alignItems: "center",
     justifyContent: "center",
+  },
+  backButtonWrapper: {
+    width: "100%",
+    alignItems: "flex-start",
+    marginBottom: 0,
   },
 });
 

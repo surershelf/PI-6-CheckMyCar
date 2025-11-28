@@ -5,9 +5,7 @@ import Input from "../../components/Input";
 import Header from "../../components/Header";
 import { theme } from "../../constants/theme";
 
-import { auth, db } from "../../../firebaseConfig"; // Importa Auth e Firestore
-import { createUserWithEmailAndPassword } from "firebase/auth"; // Função de Cadastro
-import { doc, setDoc } from "firebase/firestore"; // Funções do Firestore
+import { registerDriver } from "../../services/UserService";
 
 const RegisterPage = ({ navigation }) => {
   const [nome, setNome] = useState("");
@@ -15,8 +13,10 @@ const RegisterPage = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
+  const [isLoading, setIsLoading] = useState(false); // Adicionado estado de loading
 
   const handleRegister = async () => {
+    // 1. VALIDAÇÃO LOCAL (UI/Componente)
     if (!nome || !sobrenome || !email || !senha || !confirmarSenha) {
       Alert.alert("Atenção", "Preencha todos os campos.");
       return;
@@ -28,74 +28,69 @@ const RegisterPage = ({ navigation }) => {
     if (senha.length < 6) {
       Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres.");
       return;
-    }
-    // -------------------------
+    } // -------------------------
+    setIsLoading(true);
 
     try {
-      // 2. CRIA O USUÁRIO no Firebase Authentication
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        senha
-      );
-      const user = userCredential.user;
+      // 2. CHAMA O SERVIÇO DE REGISTRO
+      const result = await registerDriver(nome, sobrenome, email, senha);
 
-      // 3. SALVA INFORMAÇÕES ADICIONAIS no Cloud Firestore
-      // Usamos o UID (ID exclusivo do Firebase) como ID do documento para vincular os dados
-      await setDoc(doc(db, "motoristas", user.uid), {
-        nome: nome,
-        sobrenome: sobrenome,
-        email: email, // Armazenar email no DB, mas o Auth já gerencia a autenticação
-        createdAt: new Date(),
-      });
+      if (result.success) {
+        // Limpa os campos
+        setNome("");
+        setSobrenome("");
+        setEmail("");
+        setSenha("");
+        setConfirmarSenha("");
 
-      // Limpa os campos
-      setNome("");
-      setSobrenome("");
-      setEmail("");
-      setSenha("");
-      setConfirmarSenha(""); // Exibe o alerta
-      Alert.alert(
-        "Sucesso!",
-        "Cadastro realizado com sucesso. Faça login agora."
-      ); // Redireciona para a tela de Login
-      navigation.navigate("Login");
-    } catch (error) {
-      console.error("Erro no cadastro:", error);
-      let errorMessage = "Erro ao tentar cadastrar. Tente novamente.";
+        // Exibe o alerta de sucesso
+        Alert.alert("Sucesso!", result.message);
 
-      // Tratamento de erros comuns do Firebase Auth
-      if (error.code === "auth/email-already-in-use") {
-        errorMessage = "Este email já está cadastrado. Tente fazer login.";
-      } else if (error.code === "auth/invalid-email") {
-        errorMessage = "O formato do email é inválido.";
+        // Redireciona para a tela de Login
+        navigation.navigate("Login");
+      } else {
+        // Exibe o alerta de erro retornado pelo serviço (Auth Errors)
+        Alert.alert("Erro de Cadastro", result.message);
       }
-
-      Alert.alert("Erro de Cadastro", errorMessage);
+    } catch (error) {
+      // Este catch pega erros de rede ou outros erros inesperados
+      console.error("Erro inesperado no cadastro:", error);
+      Alert.alert(
+        "Erro Inesperado",
+        "Ocorreu um erro desconhecido durante o cadastro."
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Header title="Cadastre-se" />
+
       <Input
         label="Nome"
         placeholder="Nome"
         value={nome}
         onChangeText={setNome}
       />
+
       <Input
         label="Sobrenome"
         placeholder="Sobrenome"
         value={sobrenome}
         onChangeText={setSobrenome}
       />
+
       <Input
         label="Email"
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
+
       <Input
         label="Senha"
         placeholder="Senha"
@@ -103,6 +98,7 @@ const RegisterPage = ({ navigation }) => {
         onChangeText={setSenha}
         secureTextEntry
       />
+
       <Input
         label="Confirmar Senha"
         placeholder="Confirmar Senha"
@@ -110,7 +106,12 @@ const RegisterPage = ({ navigation }) => {
         onChangeText={setConfirmarSenha}
         secureTextEntry
       />
-      <Button title="Cadastrar" onPress={handleRegister} />
+
+      <Button
+        title={isLoading ? "Cadastrando..." : "Cadastrar"}
+        onPress={handleRegister}
+        disabled={isLoading} // Desabilita o botão durante o loading
+      />
     </ScrollView>
   );
 };

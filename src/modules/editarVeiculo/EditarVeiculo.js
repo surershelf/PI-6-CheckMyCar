@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, ScrollView, Alert, View } from "react-native";
+import { StyleSheet, ScrollView, Alert, View, Text } from "react-native"; // Importado Text para tela de loading
 import { theme } from "../../constants/theme";
 import Header from "../../components/Header";
 import Input from "../../components/Input";
@@ -7,15 +7,21 @@ import Select from "../../components/Select";
 import Button from "../../components/Button";
 import BackButton from "../../components/BackButton";
 
-// Importações do Firebase
-import { auth, db } from "../../../firebaseConfig";
-import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore"; // Necessário para CRUD
+// --- IMPORTANDO O SERVIÇO ---
+// Agora a lógica de comunicação com o Firestore está encapsulada aqui.
+import {
+  getVehicleById,
+  updateVehicle,
+  deleteVehicle,
+} from "../../services/VehicleService";
+
+// REMOVIDO: import { auth, db } from "../../../firebaseConfig";
+// REMOVIDO: import { doc, getDoc, updateDoc, deleteDoc } from "firebase/firestore";
 
 const EditarVeiculo = ({ route, navigation }) => {
-  // 1. Recebe o ID do veículo passado pela tela anterior (HomePage)
-  const { vehicleId } = route.params;
+  // 1. Recebe o ID do veículo
+  const { vehicleId } = route.params; // Estados para armazenar os dados e controlar o loading
 
-  // Estados para armazenar os dados e carregar o formulário
   const [tipVeiculo, setTipVeiculo] = useState("");
   const [tipCombust, setTipCombust] = useState("");
   const [modelo, setModelo] = useState("");
@@ -24,27 +30,25 @@ const EditarVeiculo = ({ route, navigation }) => {
   const [km, setKM] = useState("");
   const [placa, setPlaca] = useState("");
   const [renavam, setRenavam] = useState("");
+  const [isLoading, setIsLoading] = useState(true); // Adicionado estado de loading
 
   const tipoVeiculos = ["Carro", "Moto", "Outros"];
-  const tipoCombustivel = ["Alcool", "Gasolina", "Flex", "Diesel"];
+  const tipoCombustivel = ["Alcool", "Gasolina", "Flex", "Diesel"]; // 2. Carrega os dados do veículo usando o Service
 
-  // 2. Carrega os dados do veículo ao entrar na tela
   useEffect(() => {
     const loadVehicleData = async () => {
       if (!vehicleId) return;
 
       try {
-        const docRef = doc(db, "veiculos", vehicleId);
-        const docSnap = await getDoc(docRef);
+        // --- USANDO getVehicleById ---
+        const data = await getVehicleById(vehicleId);
 
-        if (docSnap.exists()) {
-          const data = docSnap.data();
+        if (data) {
           setTipVeiculo(data.tipVeiculo || "");
           setTipCombust(data.tipCombust || "");
           setModelo(data.modelo || "");
           setAno(data.ano || "");
           setMarca(data.marca || "");
-          // KM deve ser tratado como string para o Input
           setKM(String(data.km) || "");
           setPlaca(data.placa || "");
           setRenavam(data.renavam || "");
@@ -62,9 +66,8 @@ const EditarVeiculo = ({ route, navigation }) => {
     };
 
     loadVehicleData();
-  }, [vehicleId, navigation]);
+  }, [vehicleId, navigation]); // 3. Função para Atualizar (Editar) usando o Service
 
-  // 3. Função para Atualizar (Editar)
   const handleUpdate = async () => {
     if (
       !tipVeiculo ||
@@ -81,8 +84,7 @@ const EditarVeiculo = ({ route, navigation }) => {
     }
 
     try {
-      const docRef = doc(db, "veiculos", vehicleId);
-      await updateDoc(docRef, {
+      const dataToUpdate = {
         tipVeiculo,
         modelo,
         ano,
@@ -91,17 +93,18 @@ const EditarVeiculo = ({ route, navigation }) => {
         tipCombust,
         placa,
         renavam,
-      });
+      }; // --- USANDO updateVehicle ---
+
+      await updateVehicle(vehicleId, dataToUpdate);
 
       Alert.alert("Sucesso", "Veículo atualizado com sucesso!");
-      navigation.navigate("Home"); // Volta para Home, que irá recarregar a lista
+      navigation.navigate("Home");
     } catch (error) {
       console.error("Erro ao atualizar veículo:", error);
       Alert.alert("Erro", "Não foi possível atualizar o veículo.");
     }
-  };
+  }; // 4. Função para Excluir usando o Service
 
-  // 4. Função para Excluir
   const handleDelete = () => {
     Alert.alert(
       "Confirmar Exclusão",
@@ -115,8 +118,8 @@ const EditarVeiculo = ({ route, navigation }) => {
           text: "Excluir",
           onPress: async () => {
             try {
-              const docRef = doc(db, "veiculos", vehicleId);
-              await deleteDoc(docRef);
+              // --- USANDO deleteVehicle ---
+              await deleteVehicle(vehicleId);
 
               Alert.alert("Sucesso", "Veículo excluído com sucesso!");
               navigation.navigate("Home");
@@ -129,13 +132,21 @@ const EditarVeiculo = ({ route, navigation }) => {
         },
       ]
     );
-  };
+  }; // 5. Renderização
 
-  // 5. Renderização do Formulário
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Carregando dados do veículo...</Text>
+      </View>
+    );
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.topButtonContainer}>
-        <BackButton style={styles.backButtonPosition} />
+        <BackButton />
+
         <Button
           title="Excluir Veículo"
           onPress={handleDelete}
@@ -151,12 +162,14 @@ const EditarVeiculo = ({ route, navigation }) => {
         onSelect={setTipVeiculo}
         placeholder="Selecione o veículo"
       />
+
       <Input
         label="Modelo"
         placeholder="Modelo"
         value={modelo}
         onChangeText={setModelo}
       />
+
       <Input
         label="Ano"
         placeholder="Ano"
@@ -164,12 +177,14 @@ const EditarVeiculo = ({ route, navigation }) => {
         onChangeText={setAno}
         keyboardType="numeric"
       />
+
       <Input
         label="Marca"
         placeholder="Marca"
         value={marca}
         onChangeText={setMarca}
       />
+
       <Input
         label="KM"
         placeholder="KM"
@@ -177,6 +192,7 @@ const EditarVeiculo = ({ route, navigation }) => {
         onChangeText={setKM}
         keyboardType="numeric"
       />
+
       <Select
         label="Tipo Combustível"
         value={tipCombust}
@@ -191,13 +207,13 @@ const EditarVeiculo = ({ route, navigation }) => {
         value={placa}
         onChangeText={setPlaca}
       />
+
       <Input
         label="Renavam"
         placeholder="Renavam"
         value={renavam}
         onChangeText={setRenavam}
       />
-
       <Button title="Salvar Alterações" onPress={handleUpdate} />
     </ScrollView>
   );
@@ -207,9 +223,9 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     backgroundColor: theme.colors.cardBackground,
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.xxl,
     borderRadius: theme.borderRadius.sm,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.xxl, // Ajustado para o padding original
     alignItems: "center",
     justifyContent: "flex-start",
   },
@@ -223,16 +239,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    paddingHorizontal: theme.spacing.md,
+    paddingHorizontal: 0, // Removido o padding extra, pois já está no container
     marginBottom: theme.spacing.lg,
-  },
-  backButton: {
-    padding: 0,
-    marginLeft: -theme.spacing.sm,
+    alignItems: "center",
   },
   deleteButton: {
-    backgroundColor: theme.colors.error, // Cor vermelha para exclusão
-    marginTop: theme.spacing.md,
+    backgroundColor: theme.colors.error, // Estilos ajustados para se adequar ao layout de linha
+    width: 150,
+    height: 40,
+    padding: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

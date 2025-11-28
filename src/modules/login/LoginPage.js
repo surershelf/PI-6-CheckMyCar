@@ -31,7 +31,6 @@ const LoginPage = ({ navigation }) => {
       await signInWithEmailAndPassword(auth, email, senha);
 
       Alert.alert("Sucesso", "Login efetuado!");
-      // Redireciona para a tela principal/Home
       navigation.navigate("Home");
     } catch (error) {
       console.error("Erro no login:", error);
